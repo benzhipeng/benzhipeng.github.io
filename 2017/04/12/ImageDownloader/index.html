@@ -1,0 +1,651 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+  
+
+
+  <link rel="alternate" href="/atom.xml" title="benzhipengの博客" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="12345//图片下载进度的回调public typealias ImageDownloaderProgressBlock = DownloadProgressBlock//获取到图片时（包括下载和从磁盘读取）的回调public typealias ImageDownloaderCompletionHandler = ((_ image: Image?, _ error: NSError?, _">
+<meta name="keywords">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kingfisher源码浅析系列文章 Part1">
+<meta property="og:url" content="http://yoursite.com/2017/04/12/ImageDownloader/index.html">
+<meta property="og:site_name" content="benzhipengの博客">
+<meta property="og:description" content="12345//图片下载进度的回调public typealias ImageDownloaderProgressBlock = DownloadProgressBlock//获取到图片时（包括下载和从磁盘读取）的回调public typealias ImageDownloaderCompletionHandler = ((_ image: Image?, _ error: NSError?, _">
+<meta property="og:updated_time" content="2017-04-12T08:42:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kingfisher源码浅析系列文章 Part1">
+<meta name="twitter:description" content="12345//图片下载进度的回调public typealias ImageDownloaderProgressBlock = DownloadProgressBlock//获取到图片时（包括下载和从磁盘读取）的回调public typealias ImageDownloaderCompletionHandler = ((_ image: Image?, _ error: NSError?, _">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/04/12/ImageDownloader/"/>
+
+
+
+
+
+  <title> Kingfisher源码浅析系列文章 Part1 | benzhipengの博客 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">benzhipengの博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/12/ImageDownloader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="benzhipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="benzhipengの博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Kingfisher源码浅析系列文章 Part1
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-12T16:37:11+08:00">
+                2017-04-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//图片下载进度的回调</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">typealias</span> <span class="type">ImageDownloaderProgressBlock</span> = <span class="type">DownloadProgressBlock</span></div><div class="line"></div><div class="line"><span class="comment">//获取到图片时（包括下载和从磁盘读取）的回调</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">typealias</span> <span class="type">ImageDownloaderCompletionHandler</span> = ((<span class="number">_</span> image: <span class="type">Image</span>?, <span class="number">_</span> error: <span class="type">NSError</span>?, <span class="number">_</span> url: <span class="type">URL</span>?, <span class="number">_</span> originalData: <span class="type">Data</span>?) -&gt; ())</div></pre></td></tr></table></figure>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/// 图片下载的单个任务</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">RetrieveImageDownloadTask</span> </span>&#123;</div><div class="line">	</div><div class="line">	<span class="comment">//用于存储下载图片的网络Task</span></div><div class="line">    <span class="keyword">let</span> internalTask: <span class="type">URLSessionDataTask</span></div><div class="line">    </div><div class="line">	<span class="comment">//用于持有执行该任务的Downloader，这里用了 weak 关键字 是为了避免Task和Downloader的互相持有，导致循环引用</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">private</span>(<span class="keyword">set</span>) <span class="keyword">weak</span> <span class="keyword">var</span> ownerDownloader: <span class="type">ImageDownloader</span>?</div><div class="line"></div><div class="line">	<span class="comment">//取消下载</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">cancel</span><span class="params">()</span></span> &#123;</div><div class="line">        ownerDownloader?.cancelDownloadingTask(<span class="keyword">self</span>)</div><div class="line">    &#125;</div><div class="line"></div><div class="line">	<span class="comment">//图片的地址 也是该Task的唯一标示</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">var</span> url: <span class="type">URL</span>? &#123;</div><div class="line">        <span class="keyword">return</span> internalTask.originalRequest?.url</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">//Task的优先级</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">var</span> priority: <span class="type">Float</span> &#123;</div><div class="line">        <span class="keyword">get</span> &#123;</div><div class="line">            <span class="keyword">return</span> internalTask.priority</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">set</span> &#123;</div><div class="line">            internalTask.priority = newValue</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ImageFetchLoad,包在ImageDownloader内部的一个class,用于处理一个URL多处调用的场景。部分代码如下:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">open <span class="class"><span class="keyword">class</span> <span class="title">ImageDownloader</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">ImageFetchLoad</span> </span>&#123;</div><div class="line">    </div><div class="line">    	<span class="comment">/*</span></div><div class="line">    		这里定义了一个数组，数组里面的元素是tuples,</div><div class="line">    		tuples的第一个值是回调，第二个值是控制图片下载行为(比如图片从缓存读取，图片是否处理)</div><div class="line">    	*/</div><div class="line">        <span class="keyword">var</span> contents = [(callback: <span class="type">CallbackPair</span>, options: <span class="type">KingfisherOptionsInfo</span>)]()</div><div class="line">        </div><div class="line">        <span class="comment">//图片的元数据</span></div><div class="line">        <span class="keyword">var</span> responseData = <span class="type">NSMutableData</span>()</div><div class="line">		</div><div class="line">		<span class="comment">//同一时刻下载该图片的数目</span></div><div class="line">        <span class="keyword">var</span> downloadTaskCount = <span class="number">0</span></div><div class="line">        </div><div class="line">        <span class="comment">//用于下载图片的Task</span></div><div class="line">        <span class="keyword">var</span> downloadTask: <span class="type">RetrieveImageDownloadTask</span>?</div><div class="line">    &#125;</div><div class="line"> 	</div><div class="line">	</div><div class="line">	<span class="comment">//用于保存下载每一张图片的ImageFetchLoad</span></div><div class="line">    <span class="keyword">var</span> fetchLoads = [<span class="type">URL</span>: <span class="type">ImageFetchLoad</span>]()</div><div class="line">    </div><div class="line">    <span class="comment">//下载的委托，具体实现图片下载的网络回调</span></div><div class="line">    fileprivate <span class="keyword">let</span> sessionHandler: <span class="type">ImageDownloaderSessionHandler</span></div><div class="line">    </div><div class="line">    ........</div></pre></td></tr></table></figure>
+<p>接下来主要看一下下载部分的逻辑：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">downloadImage</span><span class="params">(with url: URL,</span></span></div><div class="line">              retrieveImageTask: RetrieveImageTask?,</div><div class="line">                        options: KingfisherOptionsInfo?,</div><div class="line">                  progressBlock: ImageDownloaderProgressBlock?,</div><div class="line">              completionHandler: ImageDownloaderCompletionHandler?) -&gt; <span class="type">RetrieveImageDownloadTask</span>?</div><div class="line">    &#123; </div><div class="line">        <span class="keyword">var</span> downloadTask: <span class="type">RetrieveImageDownloadTask</span>?</div><div class="line">        </div><div class="line">        setup(progressBlock: progressBlock, with: completionHandler, <span class="keyword">for</span>: url, options: options) &#123;(session, fetchLoad) -&gt; <span class="type">Void</span> <span class="keyword">in</span></div><div class="line">        	</div><div class="line">        	<span class="comment">//如果该下载任务没有创建过，则创建</span></div><div class="line">            <span class="keyword">if</span> fetchLoad.downloadTask == <span class="literal">nil</span> &#123;</div><div class="line">				</div><div class="line">				<span class="comment">//创建下载任务</span></div><div class="line">                <span class="keyword">let</span> dataTask = session.dataTask(with: request)</div><div class="line">                </div><div class="line">                fetchLoad.downloadTask = <span class="type">RetrieveImageDownloadTask</span>(internalTask: dataTask, ownerDownloader: <span class="keyword">self</span>)</div><div class="line"></div><div class="line">                dataTask.priority = options?.downloadPriority ?? <span class="type">URLSessionTask</span>.defaultPriority</div><div class="line">                </div><div class="line">                <span class="comment">//开启下载</span></div><div class="line">                dataTask.resume()</div><div class="line">                </div><div class="line">                <span class="comment">// 保存ImageDownloader的实例</span></div><div class="line">                <span class="keyword">self</span>.sessionHandler.downloadHolder = <span class="keyword">self</span></div><div class="line">            &#125;</div><div class="line">            </div><div class="line">			<span class="comment">//统计该fetchLoad的下载任务数目</span></div><div class="line">            fetchLoad.downloadTaskCount += <span class="number">1</span></div><div class="line">            downloadTask = fetchLoad.downloadTask</div><div class="line">            </div><div class="line">            retrieveImageTask?.downloadTask = downloadTask</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> downloadTask</div><div class="line">        </div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    </div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">(progressBlock: ImageDownloaderProgressBlock?, with completionHandler: ImageDownloaderCompletionHandler?, <span class="keyword">for</span> url: URL, options: KingfisherOptionsInfo?, started: <span class="params">(<span class="params">(URLSession, ImageFetchLoad)</span></span></span></span> -&gt; <span class="type">Void</span>)) &#123;</div><div class="line">		</div><div class="line">		<span class="comment">//这里加上barrier 是因为对变量fetchLoads有读写删的操作，保证fetchLoads的安全性</span></div><div class="line">        barrierQueue.sync(flags: .barrier) &#123;</div><div class="line">        	<span class="comment">//以url为唯一标识从fetchLoads里面寻找有没有对应的fetchLoad，如果没有则需要创建</span></div><div class="line">            <span class="keyword">let</span> loadObjectForURL = fetchLoads[url] ?? <span class="type">ImageFetchLoad</span>()</div><div class="line">            </div><div class="line">            <span class="comment">//将progress和completion的clouser以及options，以tuples的形式组装好，存入到fetchLoad的实例变量contents中。</span></div><div class="line">            <span class="keyword">let</span> callbackPair = (progressBlock: progressBlock, completionHandler: completionHandler)</div><div class="line">            loadObjectForURL.contents.append((callbackPair, options ?? <span class="type">KingfisherEmptyOptionsInfo</span>))</div><div class="line">            </div><div class="line">            <span class="comment">//将fetchLoad的实例保存起来。(如果有则覆盖旧的)</span></div><div class="line">            fetchLoads[url] = loadObjectForURL</div><div class="line">            </div><div class="line">            <span class="comment">//创建下载任务</span></div><div class="line">            <span class="keyword">if</span> <span class="keyword">let</span> session = session &#123;</div><div class="line">                started(session, loadObjectForURL)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>图片下载的网络回调委托了类ImageDownloaderSessionHandler来实现，该类实现了URLSessionDataDelegate协议，具体实现如下:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ImageDownloaderSessionHandler</span>: <span class="title">NSObject</span>, <span class="title">URLSessionDataDelegate</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">var</span> downloadHolder: <span class="type">ImageDownloader</span>?</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">urlSession</span><span class="params">(<span class="number">_</span> session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping <span class="params">(URLSession.ResponseDisposition)</span></span></span> -&gt; <span class="type">Void</span>) &#123;</div><div class="line">        </div><div class="line">        <span class="comment">//如果downloader实例为空，则该请求视为已经取消</span></div><div class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> downloader = downloadHolder <span class="keyword">else</span> &#123;</div><div class="line">            completionHandler(.cancel)</div><div class="line">            <span class="keyword">return</span></div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="comment">//根据response返回的状态码判断该请求是否有效</span></div><div class="line">        <span class="keyword">if</span> <span class="keyword">let</span> statusCode = (response <span class="keyword">as</span>? <span class="type">HTTPURLResponse</span>)?.statusCode,</div><div class="line">           <span class="keyword">let</span> url = dataTask.originalRequest?.url,</div><div class="line">            !(downloader.delegate ?? downloader).isValidStatusCode(statusCode, <span class="keyword">for</span>: downloader)</div><div class="line">        &#123;</div><div class="line">            <span class="keyword">let</span> error = <span class="type">NSError</span>(domain: <span class="type">KingfisherErrorDomain</span>,</div><div class="line">                                code: <span class="type">KingfisherError</span>.invalidStatusCode.rawValue,</div><div class="line">                                userInfo: [<span class="type">KingfisherErrorStatusCodeKey</span>: statusCode, <span class="type">NSLocalizedDescriptionKey</span>: <span class="type">HTTPURLResponse</span>.localizedString(forStatusCode: statusCode)])</div><div class="line">            callCompletionHandlerFailure(error: error, url: url)</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        completionHandler(.allow)</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">urlSession</span><span class="params">(<span class="number">_</span> session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data)</span></span> &#123;</div><div class="line"></div><div class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> downloader = downloadHolder <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">return</span></div><div class="line">        &#125;</div><div class="line">		</div><div class="line">		<span class="comment">//从downloader中根据url取出fetchload</span></div><div class="line">        <span class="keyword">if</span> <span class="keyword">let</span> url = dataTask.originalRequest?.url, <span class="keyword">let</span> fetchLoad = downloader.fetchLoad(<span class="keyword">for</span>: url) &#123;</div><div class="line">        	</div><div class="line">        	<span class="comment">//保存数据</span></div><div class="line">            fetchLoad.responseData.append(data)</div><div class="line">            </div><div class="line">            <span class="keyword">if</span> <span class="keyword">let</span> expectedLength = dataTask.response?.expectedContentLength &#123;</div><div class="line">            </div><div class="line">            	<span class="comment">//从fetchLoad的contents中遍历取出closure (一个url在多个地方同时发起请求)</span></div><div class="line">                <span class="keyword">for</span> content <span class="keyword">in</span> fetchLoad.contents &#123;</div><div class="line">                    <span class="type">DispatchQueue</span>.main.async &#123;</div><div class="line">                        content.callback.progressBlock?(<span class="type">Int64</span>(fetchLoad.responseData.length), expectedLength)</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">urlSession</span><span class="params">(<span class="number">_</span> session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?)</span></span> &#123;</div><div class="line">        </div><div class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> url = task.originalRequest?.url <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">return</span></div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="comment">//下载结束</span></div><div class="line">        <span class="keyword">guard</span> error == <span class="literal">nil</span> <span class="keyword">else</span> &#123;</div><div class="line">            callCompletionHandlerFailure(error: error!, url: url)</div><div class="line">            <span class="keyword">return</span></div><div class="line">        &#125;</div><div class="line">        <span class="comment">//下载成功 处理下载后的元数据</span></div><div class="line">        processImage(<span class="keyword">for</span>: task, url: url)</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">     </div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">processImage</span><span class="params">(<span class="keyword">for</span> task: URLSessionTask, url: URL)</span></span> &#123;</div><div class="line"></div><div class="line">        downloader.processQueue.async &#123;</div><div class="line"> </div><div class="line">            <span class="keyword">let</span> data = fetchLoad.responseData <span class="keyword">as</span> <span class="type">Data</span></div><div class="line">            </div><div class="line">			<span class="comment">//同一个URL发出的多次请求，在一次请求数据回来时对图片进行process的结果先存储起来，下一个请求的数据回来时先从cache里面寻找，如果有该process处理过的图片就不需要再次处理了，直接获取。</span></div><div class="line">            <span class="keyword">var</span> imageCache: [<span class="type">String</span>: <span class="type">Image</span>] = [:]</div><div class="line">            <span class="keyword">for</span> content <span class="keyword">in</span> fetchLoad.contents &#123;</div><div class="line">                </div><div class="line">                <span class="keyword">let</span> options = content.options</div><div class="line">                <span class="keyword">let</span> processor = options.processor            </div><div class="line">                <span class="keyword">var</span> image = imageCache[processor.identifier]</div><div class="line">                <span class="keyword">if</span> image == <span class="literal">nil</span> &#123;</div><div class="line">                    image = processor.process(item: .data(data), options: options)</div><div class="line">                    imageCache[processor.identifier] = image</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/12/ImageCache/" rel="next" title="Kingfisher源码浅析系列文章 Part2">
+                <i class="fa fa-chevron-left"></i> Kingfisher源码浅析系列文章 Part2
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="benzhipeng" />
+          <p class="site-author-name" itemprop="name">benzhipeng</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">benzhipeng</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
